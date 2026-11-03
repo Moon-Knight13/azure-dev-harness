@@ -2,6 +2,18 @@
 .env
 .env.*
 !.env.example
+
+# Azure state (per-environment, never committed)
+.state/environment.json
+.state/history.jsonl
+
+# Azure offline packages (large binaries)
+offline-packages/*.tar
+offline-packages/*.tar.xz
+offline-packages/*.tgz
+
+# Azure deployment logs
+*.log
 secrets.*
 *.pem
 *.key

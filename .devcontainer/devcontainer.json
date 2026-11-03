@@ -1,5 +1,8 @@
 {
-  "name": "Claude Code Sandbox",
+  "name": "Azure Dev Harness",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
   "build": {
     "dockerfile": "Dockerfile",
     "context": "..",
@@ -55,8 +58,10 @@
     "NODE_OPTIONS": "--max-old-space-size=4096",
     "CLAUDE_CONFIG_DIR": "/home/node/.claude",
     "POWERLEVEL9K_DISABLE_GITSTATUS": "true",
-    "LOCAL_MODEL_ENABLED": "true",
+    "LOCAL_MODEL_ENABLED": "false",
     "LOCAL_MODEL_ENDPOINT": "http://host.docker.internal:11434",
+    "AZURE_ENV_NAME": "",
+    "AZURE_RESOURCE_GROUP": "",
     "CAVEMAN_ENABLED": "1",
     "CAVEMAN_INSTALL_SHA256": "8ddef49c15f089c26affed3c31d97142c683e1d37a1499ae557281ca09c2712c",
     "CAVEMAN_MODE": "lite",

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "last_bootstrap": null,
+  "last_deploy": null,
+  "last_health_check": null,
+  "environment": {
+    "azure_env_name": null,
+    "resource_group": null,
+    "subscription_id": null,
+    "region": null
+  },
+  "resources": {
+    "acr": { "name": null, "private_ip": null, "status": "unknown" },
+    "keyvault": { "name": null, "private_ip": null, "status": "unknown" },
+    "sql": { "server": null, "database": null, "private_ip": null, "status": "unknown" },
+    "appservice": { "name": null, "url": null, "status": "unknown" },
+    "firewall": { "name": null, "private_ip": null },
+    "vnet": { "name": null, "address_space": null }
+  },
+  "blockers": [],
+  "connectivity": {
+    "dns_working": null,
+    "egress_filtered": null,
+    "private_endpoints_resolving": null,
+    "imds_reachable": null
+  }
+}

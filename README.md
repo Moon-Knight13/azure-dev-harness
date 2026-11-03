@@ -1,89 +1,126 @@
-# Claude Secure Template
+# Azure Dev Harness
 
-[![ci](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/ci.yml)
-[![semgrep](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/semgrep.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/semgrep.yml)
-[![secret-scan](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/secret-scan.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/claude_template_repo/actions/workflows/secret-scan.yml)
+[![ci](https://github.com/Moon-Knight13/azure-dev-harness/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/azure-dev-harness/actions/workflows/ci.yml)
+[![semgrep](https://github.com/Moon-Knight13/azure-dev-harness/actions/workflows/semgrep.yml/badge.svg?branch=main)](https://github.com/Moon-Knight13/azure-dev-harness/actions/workflows/semgrep.yml)
 
-A language-agnostic, production-ready template for Claude-first development. Provides secure defaults, AI task routing, BMAD workflow integration, and deterministic CI gates so you can focus on your project rather than its scaffolding.
+A portable, Claude-native platform for bootstrapping and operating Azure dev environments. Built for teams stuck fighting access issues instead of shipping code — especially in locked-down private VNet setups with no internet egress.
 
-## What's Included
+## What It Does
 
-- **AI routing** — routes low-risk work to a local Ollama model; escalates to Claude for security, architecture, and cross-cutting changes
-- **Security gates** — gitleaks secret scanning, semgrep SAST (including MITRE ATLAS AI/ML rules), Trivy container scanning, all enforced in CI
-- **BMAD workflow** — structured product → engineering planning via the `/bmad` skill
-- **Kanban orchestration** — a per-repo GitHub Project board where a human orchestrator hands work to Claude sessions or local models; agents claim issues collision-free via `/next-issue` and `/run-epic` (see [docs/KANBAN_WORKFLOW.md](docs/KANBAN_WORKFLOW.md))
-- **Devcontainer** — deny-by-default network firewall, pre-installed tooling, Claude CLI with mounted auth volume
-- **Branch protection bootstrap** — one-command GitHub branch protection with required status checks
-- **Day-0 validation** — `/day0-check` walks you through every setup step with pass/fail output and remediation hints
+- **7-phase bootstrap validator** — connectivity, DNS, tools, auth, private endpoints, offline fallback, E2E acceptance
+- **Bicep IaC modules** — VNet, ACR, Key Vault, SQL, App Service — all with private endpoints, managed identity, zero passwords
+- **Azure Developer CLI (`azd`) integration** — one-command deploy
+- **Claude as Azure expert** — 7 skills, 2 MCP servers (`@azure/mcp` + `azops-mcp`), persistent state tracking
+- **Environment state** — `.state/environment.json` persists resource status, blockers, and connectivity between sessions
+- **Cost estimation** — SKU pricing reference and optimization tiers ($160–$1,882/mo)
+- **Runbooks** — private endpoint debugging, ACR push troubleshooting, managed identity debugging, firewall FQDN management
+- **Security gates** — gitleaks, semgrep, pre-commit hooks, CI enforcement
 
-## How it works
+## Architecture
 
-Work comes in as a board card, gets **routed** by risk — to a human, to Claude, or to a
-cheaper local model — and every change runs the same security gates before it merges. The
-whole loop runs inside a devcontainer whose network is deny-by-default.
+```
+┌─────────────────────────────────────────────────┐
+│  Azure Private VNet (10.0.0.0/16)               │
+│                                                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
+│  │ App Svc  │  │   ACR    │  │ Key Vault│      │
+│  │ (P.E.)   │  │ (P.E.)  │  │ (P.E.)   │      │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘      │
+│       │              │              │            │
+│  ┌────┴──────────────┴──────────────┴─────┐     │
+│  │         Private DNS Zones              │     │
+│  └────────────────┬───────────────────────┘     │
+│                   │                             │
+│  ┌────────────────┴───────────────────────┐     │
+│  │  Dev VM / Bastion  ←  Claude + azd     │     │
+│  └────────────────────────────────────────┘     │
+│                                                 │
+│  ┌──────────┐  ┌──────────┐                     │
+│  │ SQL (PE) │  │ Firewall │ ← FQDN allowlist   │
+│  └──────────┘  └──────────┘                     │
+└─────────────────────────────────────────────────┘
+```
 
-📊 **[Open the visual overview →](https://moon-knight13.github.io/claude_template_repo/)** —
-a one-page briefing (for technical and non-technical readers) covering the devcontainer, the
-two engines, caveman token compression, and the CI gates. Served from
-[`docs/explainer/`](docs/explainer/index.html) via GitHub Pages; the page is self-contained,
-so you can also open the HTML locally.
-
-- **Routing** derives from `scripts/route-model.sh`; the same Human/Claude/Local decision
-  shows up as the **Route** field on each board card.
-- **Gates are required, not advisory** — a red check blocks the merge (see
-  [`.github/workflows/`](.github/workflows/)).
-- **Caveman** trims Claude's prose to cut output tokens and surfaces a live per-session
-  token/cost tally in the statusline (see [docs/TEMPLATE_GUIDE.md](docs/TEMPLATE_GUIDE.md)).
-
-## Prerequisites
-
-- Docker + VS Code Dev Containers extension
-- Git with SSH access to GitHub
-- Claude Code CLI (authenticated before first session)
-- Optional: Ollama on host port 11434 for local model offload
-
-See [docs/TEMPLATE_GUIDE.md](docs/TEMPLATE_GUIDE.md) for the full setup guide including Caveman token compression and PII-Shield.
+P.E. = Private Endpoint. All services accessible only via private IP. Firewall provides filtered egress (FQDN allowlist), not zero egress.
 
 ## Quick Start
 
-1. **Use this template** — click "Use this template" on GitHub, or clone and re-init:
-   ```bash
-   git clone <this-repo> my-project && cd my-project && rm -rf .git && git init
-   ```
-
-2. **Open in devcontainer** — VS Code prompts to reopen; accept. The container installs all tooling automatically on start.
-
-3. **Complete day-0 setup** — two browser logins; everything else is applied automatically on container start:
-   ```bash
-   gh auth login --hostname github.com --git-protocol https --web -s project && gh auth setup-git
-   claude auth login
-   bash scripts/setup-day0.sh   # finishes the auth-gated bootstraps, prints status
-   ```
-   Verify anytime with `bash scripts/check-day0.sh` — or from Claude: `/day0-check`
-
-4. **Validate the template** — confirm all template integrity checks pass:
-   ```bash
-   bash scripts/validate-template.sh
-   ```
-
-## Repository Structure
-
-```
-.claude/commands/    Claude Code skills (/bmad, /bmad-to-board, /next-issue, /run-epic, /day0-check, /route-task, /security-audit, /firewall-allow)
-.devcontainer/       Dev environment with deny-by-default firewall and pre-installed tooling
-.github/             Workflows (CI, secret scan, semgrep, container scan, weekly audit); issue & PR templates
-docs/                TEMPLATE_GUIDE.md, AI_ROUTING_POLICY.md, BMAD_WORKFLOW.md, KANBAN_WORKFLOW.md
-scripts/             Bootstrap (incl. board), routing, CI helpers, and template validator
+### 1. Open in devcontainer
+```bash
+git clone https://github.com/Moon-Knight13/azure-dev-harness.git
+cd azure-dev-harness
+# Open in VS Code → "Reopen in Container"
 ```
 
-## Deriving a New Project
+### 2. Authenticate
+```bash
+az login
+azd auth login
+```
 
-When you start a new project from this template:
+### 3. Bootstrap and validate
+```bash
+./bootstrap-azure-dev.sh
+```
+Runs 7 phases: IMDS, DNS, HTTPS egress, tool versions, Azure auth, private endpoint DNS, and E2E acceptance.
 
-1. Replace this `README.md` with your project README — describe what the project *is*, not the template it came from.
-2. Add `scripts/ci/lint-*.sh` and `scripts/ci/test-*.sh` for your language stack (see `scripts/ci/README.md`).
-3. Do the two day-0 logins (quick start step 3) — `scripts/setup-day0.sh` then fills CODEOWNERS, copies configs, applies branch protection, and creates the Kanban board (see [docs/KANBAN_WORKFLOW.md](docs/KANBAN_WORKFLOW.md)).
-4. Replace or remove `docs/explainer/` — it describes *this template*, not your project. If you keep a project explainer there, enable GitHub Pages to serve it (**Settings → Pages → Source: "GitHub Actions"**); the `pages` workflow publishes it on the next push. Leave Pages disabled if the page shouldn't be public.
+### 4. Deploy
+```bash
+azd up
+```
+
+### 5. Check health
+```bash
+# Claude skill: /azure-health
+# Or manually:
+curl -sf https://<app-name>.azurewebsites.net/health
+```
+
+## State Tracking
+
+Claude maintains environment state between sessions:
+```bash
+scripts/update-state.sh show          # Current state
+scripts/update-state.sh init          # Initialize from template
+scripts/update-state.sh set resources.acr.status "deployed"
+scripts/update-state.sh append-blocker "DNS not resolving for ACR"
+```
+
+State file: `.state/environment.json` (gitignored, per-environment).
+
+## Cost Tiers
+
+| Tier | Monthly | Notes |
+|------|---------|-------|
+| Minimal | ~$160 | No firewall, no Bastion, Basic ACR |
+| Standard | ~$970 | Shared firewall, Standard Bastion |
+| Full | ~$1,882 | Dedicated firewall, Premium ACR, P1v3 |
+
+Run `scripts/cost-estimate.sh` for detailed breakdown. See `docs/COST_REFERENCE.md`.
+
+## Claude Skills
+
+| Skill | Trigger |
+|-------|---------|
+| `/azure-bootstrap` | Validate environment connectivity and tools |
+| `/azd-deploy` | Deploy infrastructure and app |
+| `/azure-health` | Health check deployed resources |
+| `/azure-troubleshoot` | Debug common Azure issues |
+| `/azure-preflight` | Pre-deployment validation |
+| `/azure-cost` | Cost estimation and optimization |
+| `/azure-state` | Environment state management |
+
+## MCP Servers
+
+- **`@azure/mcp`** — official Microsoft MCP for ARM operations and Resource Graph queries
+- **`azops-mcp`** — community MCP with 90+ Azure operations tools
+
+## References
+
+- [App Service Landing Zone Accelerator](https://learn.microsoft.com/azure/cloud-adoption-framework/scenarios/app-platform/app-services/landing-zone-accelerator)
+- [Azure Verified Modules](https://aka.ms/avm)
+- [DORA 2025 Report](https://dora.dev)
+- [CNCF Platforms White Paper](https://tag-app-delivery.cncf.io/whitepapers/platforms/)
 
 ## License
 

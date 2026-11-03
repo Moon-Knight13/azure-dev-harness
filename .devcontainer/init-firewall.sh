@@ -104,7 +104,16 @@ for domain in \
     "files.pythonhosted.org" \
     "marketplace.visualstudio.com" \
     "vscode.blob.core.windows.net" \
-    "update.code.visualstudio.com"; do
+    "update.code.visualstudio.com" \
+    "management.azure.com" \
+    "login.microsoftonline.com" \
+    "graph.microsoft.com" \
+    "mcr.microsoft.com" \
+    "packages.microsoft.com" \
+    "aka.ms" \
+    "azurecliprod.blob.core.windows.net" \
+    "dc.services.visualstudio.com" \
+    "azuredcr.azurecr.io"; do
     echo "Resolving $domain..."
     ips=$(dig +noall +answer A "$domain" | awk '$4 == "A" {print $5}')
     if [ -z "$ips" ]; then

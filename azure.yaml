@@ -1,0 +1,24 @@
+# Azure Developer CLI (azd) configuration
+# Run: azd up
+# This deploys the hello-world app with all private-endpoint infra.
+
+name: azure-dev-harness
+metadata:
+  template: azure-dev-harness@0.1.0
+
+services:
+  web:
+    project: ./src/app
+    host: appservice
+    language: js
+    docker:
+      path: ./Dockerfile
+      context: .
+
+infra:
+  provider: bicep
+  path: ./infra
+  module: main
+
+pipeline:
+  provider: github
