@@ -5,13 +5,13 @@
 # Docs: https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Default: all files require a review
-* @your-org/your-team
+* @MoonKnight13
 
 # Security-sensitive paths require explicit ownership
-.devcontainer/ @your-org/your-team
-.github/ @your-org/your-team
-scripts/ @your-org/your-team
-.semgrep.yml @your-org/your-team
-.gitleaks.toml @your-org/your-team
-SECURITY.md @your-org/your-team
-CLAUDE.md @your-org/your-team
+.devcontainer/ @MoonKnight13
+.github/ @MoonKnight13
+scripts/ @MoonKnight13
+.semgrep.yml @MoonKnight13
+.gitleaks.toml @MoonKnight13
+SECURITY.md @MoonKnight13
+CLAUDE.md @MoonKnight13
